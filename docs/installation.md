@@ -5,9 +5,54 @@
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 - Git installed
 
-## claude-notify
+---
 
-Desktop toast notifications for Claude Code events on Windows and macOS.
+## Option 1: Claude Code Auto Install (Recommended)
+
+Just two steps — Claude handles the rest.
+
+### Step 1: Clone the repository
+
+```bash
+git clone https://github.com/muxiaoming/my-claude-skills.git
+```
+
+### Step 2: Ask Claude Code to install the skill
+
+In Claude Code, type:
+
+```
+Install the claude-notify skill from the my-claude-skills repo in the current directory
+```
+
+Claude will automatically:
+- Copy scripts to `~/.claude/`
+- Detect your operating system
+- Install dependencies (e.g., BurntToast on Windows)
+- Configure hooks in `settings.json`
+- Verify the configuration
+
+### Step 3: Restart Claude Code
+
+Restart Claude Code to activate notifications.
+
+---
+
+## Option 2: Conversational Setup (Pre-installed Skills)
+
+If you already installed a skill via `claude skill install`, just tell Claude:
+
+```
+Set up desktop notifications for me
+```
+
+Claude reads the skill definition and runs all configuration steps automatically.
+
+---
+
+## Option 3: Manual Install (Fallback)
+
+If automatic methods are not available, follow the manual steps below.
 
 ### Windows
 
@@ -116,10 +161,15 @@ chmod +x ~/.claude/notify.sh
 
 3. Restart Claude Code to activate notifications.
 
+---
+
 ## FAQ
 
 **Q: Notifications not showing on Windows?**
 A: Make sure BurntToast is installed (`Get-Module -ListAvailable BurntToast`) and PowerShell execution policy allows running scripts.
 
-**Q: How do I uninstall a skill's notifications?**
+**Q: How do I uninstall notifications?**
 A: Remove the hooks from `~/.claude/settings.json` and delete the script file from `~/.claude/`.
+
+**Q: Claude didn't auto-configure after installing the skill?**
+A: Make sure you explicitly told Claude "set up desktop notifications" — Claude needs this prompt to run the configuration flow.

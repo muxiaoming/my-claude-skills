@@ -41,19 +41,28 @@ my-claude-skills/
 
 ## 快速安装
 
-### 安装单个技能
+### 方式一：告诉 Claude Code 安装（最简单）
+
+克隆仓库后，在 Claude Code 中说一句话即可：
+
+```
+帮我安装 my-claude-skills 仓库里的 claude-notify 技能
+```
+
+Claude 会自动完成所有配置。
+
+### 方式二：命令行安装
 
 ```bash
-# 克隆仓库
 git clone https://github.com/muxiaoming/my-claude-skills.git
-
-# 安装 claude-notify
 claude skill install ./my-claude-skills/skills/claude-notify
 ```
 
-### 手动安装
+安装后告诉 Claude "帮我配置桌面通知"，Claude 会自动执行配置。
 
-如果你不想用 `claude skill install`，可以手动复制文件。详见 [安装指南](docs/installation-zh.md)。
+### 方式三：手动安装
+
+详见 [安装指南](docs/installation-zh.md)。
 
 ---
 

@@ -41,19 +41,28 @@ my-claude-skills/
 
 ## Quick Install
 
-### Install a Skill
+### Option 1: Ask Claude Code (Easiest)
+
+Clone the repo, then just say:
+
+```
+Install the claude-notify skill from the my-claude-skills repo
+```
+
+Claude handles everything automatically.
+
+### Option 2: Command Line
 
 ```bash
-# Clone the repository
 git clone https://github.com/muxiaoming/my-claude-skills.git
-
-# Install claude-notify
 claude skill install ./my-claude-skills/skills/claude-notify
 ```
 
-### Manual Install
+Then tell Claude "set up desktop notifications" to auto-configure.
 
-If you prefer not to use `claude skill install`, you can copy files manually. See [Installation Guide](docs/installation.md).
+### Option 3: Manual Install
+
+See [Installation Guide](docs/installation.md).
 
 ---
 
