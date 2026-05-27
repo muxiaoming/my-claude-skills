@@ -2,7 +2,34 @@
 
 # My Claude Skills
 
-A collection of custom skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+A collection of custom skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), ready to use.
+
+---
+
+## Repository Structure
+
+```
+my-claude-skills/
+│
+├── README.md                        # English
+├── README-zh.md                     # Chinese
+├── LICENSE                          # MIT License
+│
+├── skills/                          # Skills directory
+│   └── claude-notify/               # Desktop notification skill
+│       ├── SKILL.md                 # Skill definition
+│       └── scripts/
+│           ├── toast.ps1            # Windows notification script
+│           └── notify.sh            # macOS notification script
+│
+└── docs/                            # Documentation
+    ├── installation.md              # Installation guide (English)
+    ├── installation-zh.md           # Installation guide (Chinese)
+    ├── github-connection-zh.md      # Claude Code + GitHub setup (Chinese)
+    └── skill-creation-zh.md         # Skill creation guide (Chinese)
+```
+
+---
 
 ## Available Skills
 
@@ -10,37 +37,47 @@ A collection of custom skills for [Claude Code](https://docs.anthropic.com/en/do
 |-------|-------------|-----------|
 | [claude-notify](skills/claude-notify/) | Desktop toast notifications for Claude Code events (Notification, PermissionDenied, Stop) | Windows 10/11, macOS |
 
-## Installation
+---
 
-### Quick Install
+## Quick Install
+
+### Install a Skill
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/my-claude-skills.git
+git clone https://github.com/muxiaoming/my-claude-skills.git
 
-# Install a skill
+# Install claude-notify
 claude skill install ./my-claude-skills/skills/claude-notify
 ```
 
 ### Manual Install
 
-See [Installation Guide](docs/installation.md) for detailed setup instructions.
+If you prefer not to use `claude skill install`, you can copy files manually. See [Installation Guide](docs/installation.md).
+
+---
 
 ## Documentation
 
-- [Installation Guide](docs/installation.md) - Step-by-step setup for each skill
+| Document | Description |
+|----------|-------------|
+| [Installation Guide](docs/installation.md) | Step-by-step setup for each skill (Windows & macOS) |
+| [Claude Code + GitHub](docs/github-connection-zh.md) | How to set up GitHub CLI, create repos, and push code |
+| [Skill Creation Guide](docs/skill-creation-zh.md) | How to create your own Claude Code skills |
+
+---
 
 ## Creating Your Own Skills
 
-Each skill follows this structure:
+Each skill is a directory with at minimum a `SKILL.md` file:
 
 ```
-skill-name/
-├── SKILL.md          # Required: skill definition with YAML frontmatter
-└── scripts/          # Optional: executable scripts
+my-skill/
+├── SKILL.md              # Required: skill definition
+└── scripts/              # Optional: executable scripts
 ```
 
-The `SKILL.md` file must include frontmatter with `name` and `description` fields:
+Basic `SKILL.md` format:
 
 ```markdown
 ---
@@ -48,9 +85,15 @@ name: my-skill
 description: What this skill does and when to trigger it.
 ---
 
-# Instructions here...
+# Instructions
+
+Detailed steps...
 ```
+
+For a full tutorial, see [Skill Creation Guide](docs/skill-creation-zh.md).
+
+---
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) - Free to use, modify, and distribute.
