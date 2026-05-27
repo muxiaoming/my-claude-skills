@@ -1,3 +1,5 @@
+[中文](README-zh.md) | English
+
 # My Claude Skills
 
 A collection of custom skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
