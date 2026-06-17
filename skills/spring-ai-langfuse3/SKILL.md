@@ -21,7 +21,55 @@ opentelemetry-exporter-otlp（OTLP 协议导出）
 Langfuse /api/public/otel（接收并展示 Trace）
 ```
 
+## 0. 版本管理策略（重要）
+
+### 自动查询官方文档
+
+**使用此 skill 时，必须先查询官方文档获取最新推荐版本：**
+
+```bash
+# 1. 查询 Langfuse 官方 Spring AI 文档
+gh api repos/langfuse/langfuse-docs/contents/content/integrations/frameworks/spring-ai.mdx \
+  -q '.content' | base64 -d | grep -E "(opentelemetry-instrumentation-bom|spring-ai-bom)" -A 1
+
+# 2. 查询 Maven 中央仓库最新版本
+curl -s "https://repo1.maven.org/maven2/io/opentelemetry/instrumentation/opentelemetry-instrumentation-bom/maven-metadata.xml" | grep -o '<latest>.*</latest>' | sed 's/<latest>//g;s/<\/latest>//g'
+curl -s "https://repo1.maven.org/maven2/org/springframework/ai/spring-ai-bom/maven-metadata.xml" | grep -o '<version>1\.[0-9]*\.[0-9]*</version>' | tail -1
+```
+
+### 推荐版本（无法查询时使用）
+
+如果无法访问官方文档或 Maven 仓库，使用以下推荐版本：
+
+| 依赖 | 推荐版本 | 说明 |
+|------|---------|------|
+| `opentelemetry-instrumentation-bom` | **2.28.1** | OpenTelemetry instrumentation BOM |
+| `spring-ai-bom` | **1.0.9** | Spring AI BOM（1.0.x 最新） |
+
+### 版本管理原则
+
+1. **优先使用官方文档推荐版本**：始终先查询官方文档
+2. **BOM 管理版本**：所有 OpenTelemetry instrumentation 版本由 BOM 管理
+3. **避免硬编码**：不要显式声明被 BOM 管理的依赖版本
+4. **定期更新**：定期检查官方文档是否有新版本
+
 ## 1. pom.xml
+
+### 查询最新版本
+
+在配置 pom.xml 之前，先查询官方文档获取最新推荐版本：
+
+```bash
+# 查询 Langfuse 官方 Spring AI 文档中的版本
+gh api repos/langfuse/langfuse-docs/contents/content/integrations/frameworks/spring-ai.mdx \
+  -q '.content' | base64 -d | grep -E "(opentelemetry-instrumentation-bom|spring-ai-bom)" -A 1
+
+# 输出示例：
+# <artifactId>opentelemetry-instrumentation-bom</artifactId>
+# <version>2.28.1</version>
+# <artifactId>spring-ai-bom</artifactId>
+# <version>1.0.9</version>
+```
 
 ### dependencyManagement
 
@@ -32,23 +80,32 @@ Langfuse /api/public/otel（接收并展示 Trace）
 ```xml
 <dependencyManagement>
     <dependencies>
-        <!-- OpenTelemetry BOM 必须放最前，版本与官方文档保持一致 -->
+        <!-- OpenTelemetry BOM 必须放最前 -->
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-bom</artifactId>
-            <version>2.28.1</version>
+            <version>${otel.bom.version}</version>  <!-- 查询官方文档获取最新版本 -->
             <type>pom</type>
             <scope>import</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-bom</artifactId>
-            <version>${spring-ai.version}</version>
+            <version>${spring-ai.version}</version>  <!-- 查询官方文档获取最新 1.0.x 版本 -->
             <type>pom</type>
             <scope>import</scope>
         </dependency>
     </dependencies>
 </dependencyManagement>
+```
+
+**Properties 配置：**
+```xml
+<properties>
+    <java.version>21</java.version>
+    <spring-ai.version>1.0.9</spring-ai.version>  <!-- 查询官方文档获取最新 1.0.x 版本 -->
+    <otel.bom.version>2.28.1</otel.bom.version>  <!-- 查询官方文档获取最新版本 -->
+</properties>
 ```
 
 ### 核心 4 依赖
@@ -107,6 +164,8 @@ Maven 传递依赖优先级高于 BOM，仅调 BOM 顺序无法解决。**官方
 </dependency>
 <!-- 版本由 dependencyManagement 中的 opentelemetry-instrumentation-bom 管理，无需显式声明 -->
 ```
+
+> **重要：** 不要显式声明 `opentelemetry-instrumentation-api-incubator` 的版本！版本由 BOM 自动管理。
 
 ## 3. application.yaml
 
