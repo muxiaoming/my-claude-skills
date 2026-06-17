@@ -5,7 +5,7 @@ description: 集成 Spring AI 与 Langfuse 3 可观测平台。当用户提到 "
 
 # Spring AI + Langfuse 3 集成指南
 
-基于 [Langfuse 官方示例](https://github.com/langfuse/langfuse-examples/tree/main/applications/spring-ai-demo)。
+基于 [Langfuse 官方文档](https://langfuse.com/integrations/frameworks/spring-ai)。
 
 ## 整体链路
 
@@ -28,18 +28,14 @@ Langfuse /api/public/otel（接收并展示 Trace）
 **使用此 skill 时，必须先查询官方文档获取最新推荐版本：**
 
 ```bash
-# 1. 查询 Langfuse 官方 Spring AI 文档
+# 查询 Langfuse 官方 Spring AI 文档中的版本
 gh api repos/langfuse/langfuse-docs/contents/content/integrations/frameworks/spring-ai.mdx \
   -q '.content' | base64 -d | grep -E "(opentelemetry-instrumentation-bom|spring-ai-bom)" -A 1
-
-# 2. 查询 Maven 中央仓库最新版本
-curl -s "https://repo1.maven.org/maven2/io/opentelemetry/instrumentation/opentelemetry-instrumentation-bom/maven-metadata.xml" | grep -o '<latest>.*</latest>' | sed 's/<latest>//g;s/<\/latest>//g'
-curl -s "https://repo1.maven.org/maven2/org/springframework/ai/spring-ai-bom/maven-metadata.xml" | grep -o '<version>1\.[0-9]*\.[0-9]*</version>' | tail -1
 ```
 
 ### 推荐版本（无法查询时使用）
 
-如果无法访问官方文档或 Maven 仓库，使用以下推荐版本：
+如果无法访问官方文档，使用以下推荐版本：
 
 | 依赖 | 推荐版本 | 说明 |
 |------|---------|------|
