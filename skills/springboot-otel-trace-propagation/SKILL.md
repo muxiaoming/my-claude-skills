@@ -305,6 +305,118 @@ spring:
       leak-detection-threshold: 30000
 ```
 
+## Reactor Flux + Virtual Threads 上下文传播
+
+### 问题现象
+
+Spring Boot 中通过 `Flux.subscribeOn(自定义Scheduler)` 将 LLM 调用调度到虚拟线程执行时，单次 HTTP 请求在 Langfuse 中出现 **多个独立 TraceId**（每个 Agent 步骤的 LLM 调用各自新建根 Span），链路完全断裂。
+
+```
+ChatModelCompletionObservationHandler : ... [a1b2c3...]   ← TraceId 1（步骤3）
+ChatModelCompletionObservationHandler : ... [d4e5f6...]   ← TraceId 2（步骤4，应为同一 Trace！）
+```
+
+### 根因
+
+Reactor 的 `subscribeOn(Scheduler)` 将任务切换到目标线程池执行，但 OpenTelemetry 的 `Context.current()` 存储在 ThreadLocal 中，**跨线程边界不会自动传播**。
+
+Spring Boot OTel AutoConfigure 内置了 `ObservationThreadLocalAccessor`，但需要 Reactor 层面的桥接才能将 Reactor Context ↔ ThreadLocal 双向同步。
+
+### 修复方案
+
+#### 步骤 1：开启 Reactor 自动上下文传播
+
+在 `main()` 中调用 `Hooks.enableAutomaticContextPropagation()`：
+
+```java
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        Hooks.enableAutomaticContextPropagation();
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+> 3.6+ 内置，无需额外依赖。自动将 Reactor Context 中注册了 `ThreadLocalAccessor` 的值（如 `Observation`）在 `subscribeOn` 切换线程时恢复到目标线程 ThreadLocal。
+
+#### 步骤 2：虚拟线程 Scheduler
+
+```java
+private static final Scheduler VT_SCHEDULER =
+        Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor());
+```
+
+> **不要使用 `Schedulers.boundedElastic()`** — 其内部平台线程池不遵循 `spring.threads.virtual.enabled`。
+
+#### 步骤 3：将 Observation 写入 Reactor Context
+
+在 Service 中注入 `ObservationRegistry`，在构建 Flux 管道时捕获当前 Observation 并写入 Reactor Context：
+
+```java
+@Service
+public class MyService {
+
+    private final ObservationRegistry observationRegistry;
+
+    public Flux<MyEvent> execute(Request request) {
+        Observation currentObservation = observationRegistry.getCurrentObservation();
+
+        Flux<MyEvent> pipeline = Flux.concat(
+                step1(request),
+                step2(request)
+        );
+
+        if (currentObservation != null) {
+            pipeline = pipeline.contextWrite(ctx ->
+                    ctx.put(Observation.class, currentObservation));
+        }
+
+        return pipeline;
+    }
+
+    private Flux<MyEvent> step1(Request request) {
+        return Flux.defer(() -> Flux.concat(
+                Mono.fromCallable(() -> blockingLlmCall(request))
+                    .subscribeOn(VT_SCHEDULER)  // 切换线程时自动恢复 Observation
+                    .flatMapMany(result -> ...)
+        ));
+    }
+}
+```
+
+#### 步骤 4（可选）：步骤日志获取 MDC traceId
+
+如果需要在 Agent 步骤日志中打印 traceId，使用 `deferContextual` 手动开 scope：
+
+```java
+return Flux.deferContextual(ctx -> {
+    try (Observation.Scope ignored = ctx.<Observation>getOrEmpty(Observation.class)
+            .map(Observation::openScope).orElse(null)) {
+        log.info("Step {} 开始执行", stepNum);  // 此时 MDC 中有 traceId
+    }
+    // ... 后续逻辑
+});
+```
+
+> 如果只关心 Langfuse 链路不分裂（不关心控制台 traceId），步骤 1-3 就够了。
+
+### 避坑：ContextSnapshot 与 Reactor 冲突
+
+**常见错误尝试**：
+
+```java
+// ❌ 不要这样做
+Schedulers.fromExecutor(command -> {
+    ContextSnapshot snapshot = ContextSnapshotFactory.builder().build().captureAll();
+    Executors.newVirtualThreadPerTaskExecutor().execute(snapshot.wrap(command));
+});
+```
+
+**冲突原因**：Reactor 的 `ContextOperator` 在 `command.run()` 内部执行时才恢复 Observation → 开 scope。外层 `ContextSnapshot.captureAll()` 捕获的是调度线程的上下文（**空的**），`snapshot.wrap(command)` 执行时 `snapshot.set(null)` 先跑 → 空上下文覆盖了 Reactor 刚刚恢复的 Observation scope → MDC/Langfuse 全部断裂。
+
+**正确做法**：只依赖 `Hooks.enableAutomaticContextPropagation()` + `contextWrite`，不要在外层叠加任何手动上下文捕获。
+
 ## OTLP BatchSpanProcessor 优化
 
 大 Span（含完整 prompt/completion）导出超时。通过 JVM 启动参数配置：
@@ -326,6 +438,7 @@ spring:
 | `injectTraceparent` 转 ObjectNode 不检查类型 | 数组 JSON 抛 ClassCastException | `instanceof ObjectNode` 检查 |
 | 环境变量注入 traceparent | 子进程启动时固化，运行时失效 | 改用工具输入 JSON 的 `_traceparent` 字段 |
 | `result[0]` 数组模式包装 withSpan | 异常时 result[0] 为 null | 使用 `withSpan(Callable<T>)` 直接返回 |
+| `ContextSnapshot` 包裹 Reactor Scheduler | 空上下文覆盖 Reactor 恢复的 Observation scope，链路断裂 | 只用 `Hooks.enableAutomaticContextPropagation()` + `contextWrite` |
 
 ## 验证标准
 
