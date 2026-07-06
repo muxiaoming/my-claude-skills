@@ -16,11 +16,14 @@ my-claude-skills/
 ├── LICENSE                          # MIT License
 │
 ├── skills/                          # Skills directory
-│   └── claude-notify/               # Desktop notification skill
-│       ├── SKILL.md                 # Skill definition
-│       └── scripts/
-│           ├── toast.ps1            # Windows notification script
-│           └── notify.sh            # macOS notification script
+│   ├── claude-notify/               # Desktop notification skill
+│   │   ├── SKILL.md                 # Skill definition
+│   │   └── scripts/
+│   │       ├── toast.ps1            # Windows notification script
+│   │       └── notify.sh            # macOS notification script
+│   │
+│   └── spring-ai-langfuse3/         # Spring AI + Langfuse 3 集成
+│       └── SKILL.md                 # 集成指南（依赖配置、OTel 最佳实践、常见问题排查）
 │
 └── docs/                            # Documentation
     ├── installation.md              # Installation guide (English)
@@ -36,33 +39,33 @@ my-claude-skills/
 | Skill | Description | Platforms |
 |-------|-------------|-----------|
 | [claude-notify](skills/claude-notify/) | Desktop toast notifications for Claude Code events (Notification, PermissionDenied, Stop) | Windows 10/11, macOS |
+| [spring-ai-langfuse3](skills/spring-ai-langfuse3/) | Spring AI + Langfuse 3 observability integration with automatic version discovery, OTel best practices, and JDBC conflict resolution. Based on [official Langfuse docs](https://langfuse.com/integrations/frameworks/spring-ai) | Cross-platform (JVM) |
 
 ---
 
 ## Quick Install
 
-### Option 1: Ask Claude Code (Easiest)
+Just copy and paste the prompt below to Claude Code, and it will handle everything automatically — **no manual steps, no git required**.
 
-Clone the repo, then just say:
+**For claude-notify:**
 
 ```
-Install the claude-notify skill from the my-claude-skills repo
+Install the claude-notify skill from https://github.com/muxiaoming/my-claude-skills.git
 ```
 
-Claude handles everything automatically.
+**For spring-ai-langfuse3:**
 
-### Option 2: Command Line
-
-```bash
-git clone https://github.com/muxiaoming/my-claude-skills.git
-claude skill install ./my-claude-skills/skills/claude-notify
+```
+Install the spring-ai-langfuse3 skill from https://github.com/muxiaoming/my-claude-skills.git
 ```
 
-Then tell Claude "set up desktop notifications" to auto-configure.
+Claude automatically:
+- Downloads all files needed for the skill
+- Installs the skill to `~/.claude/skills/`
+- Configures any dependencies or hooks
+- Verifies the installation
 
-### Option 3: Manual Install
-
-See [Installation Guide](docs/installation.md).
+**No repo cloning, no manual setup — just provide the URL and Claude handles everything.**
 
 ---
 
@@ -70,7 +73,7 @@ See [Installation Guide](docs/installation.md).
 
 | Document | Description |
 |----------|-------------|
-| [Installation Guide](docs/installation.md) | Step-by-step setup for each skill (Windows & macOS) |
+| [Installation Guide](docs/installation.md) | Detailed troubleshooting and manual fallback |
 | [Claude Code + GitHub](docs/github-connection-zh.md) | How to set up GitHub CLI, create repos, and push code |
 | [Skill Creation Guide](docs/skill-creation-zh.md) | How to create your own Claude Code skills |
 

@@ -16,11 +16,14 @@ my-claude-skills/
 ├── LICENSE                          # MIT 许可证
 │
 ├── skills/                          # 技能目录
-│   └── claude-notify/               # 桌面通知技能
-│       ├── SKILL.md                 # 技能定义
-│       └── scripts/
-│           ├── toast.ps1            # Windows 通知脚本
-│           └── notify.sh            # macOS 通知脚本
+│   ├── claude-notify/               # 桌面通知技能
+│   │   ├── SKILL.md                 # 技能定义
+│   │   └── scripts/
+│   │       ├── toast.ps1            # Windows 通知脚本
+│   │       └── notify.sh            # macOS 通知脚本
+│   │
+│   └── spring-ai-langfuse3/         # Spring AI + Langfuse 3 集成
+│       └── SKILL.md                 # 集成指南（依赖配置、OTel 最佳实践、常见问题排查）
 │
 └── docs/                            # 文档目录
     ├── installation.md              # 安装指南（英文）
@@ -36,33 +39,33 @@ my-claude-skills/
 | 技能 | 说明 | 平台 |
 |------|------|------|
 | [claude-notify](skills/claude-notify/) | Claude Code 桌面通知：等待确认、权限被拒、任务完成时弹出系统通知 | Windows 10/11、macOS |
+| [spring-ai-langfuse3](skills/spring-ai-langfuse3/) | Spring AI + Langfuse 3 可观测性集成：支持自动版本发现、OTel 最佳实践、JDBC 冲突解决。基于[Langfuse 官方文档](https://langfuse.com/integrations/frameworks/spring-ai) | 跨平台（JVM） |
 
 ---
 
 ## 快速安装
 
-### 方式一：告诉 Claude Code 安装（最简单）
+只需复制下面的提示词给 Claude Code，它会自动完成所有安装 —— **无需手动操作，无需 git**。
 
-克隆仓库后，在 Claude Code 中说一句话即可：
+**安装 claude-notify：**
 
 ```
-帮我安装 my-claude-skills 仓库里的 claude-notify 技能
+从 https://github.com/muxiaoming/my-claude-skills.git 安装 claude-notify 技能
 ```
 
-Claude 会自动完成所有配置。
+**安装 spring-ai-langfuse3：**
 
-### 方式二：命令行安装
-
-```bash
-git clone https://github.com/muxiaoming/my-claude-skills.git
-claude skill install ./my-claude-skills/skills/claude-notify
+```
+从 https://github.com/muxiaoming/my-claude-skills.git 安装 spring-ai-langfuse3 技能
 ```
 
-安装后告诉 Claude "帮我配置桌面通知"，Claude 会自动执行配置。
+Claude 会自动：
+- 下载技能所需的所有文件
+- 安装技能到 `~/.claude/skills/`
+- 配置依赖和 hooks
+- 验证安装结果
 
-### 方式三：手动安装
-
-详见 [安装指南](docs/installation-zh.md)。
+**无需克隆仓库、无需手动配置 —— 只需提供 URL，Claude 处理所有细节。**
 
 ---
 
@@ -70,7 +73,7 @@ claude skill install ./my-claude-skills/skills/claude-notify
 
 | 文档 | 说明 |
 |------|------|
-| [安装指南](docs/installation-zh.md) | 各技能的详细安装步骤，包含 Windows 和 macOS |
+| [安装指南](docs/installation-zh.md) | 详细的故障排查和手动安装备选方案 |
 | [Claude Code 连接 GitHub](docs/github-connection-zh.md) | 如何配置 GitHub CLI、创建仓库、推送代码 |
 | [Skill 创建指南](docs/skill-creation-zh.md) | 从零创建自己的 Claude Code Skill |
 
